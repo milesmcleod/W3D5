@@ -63,6 +63,7 @@ module Associatable
   # Phase IIIb
   def belongs_to(name, options = {})
     options = BelongsToOptions.new(name, options)
+    self.assoc_options[name] = options
     define_method(name) do
       fkey_value = options.send(:foreign_key)
       target_class = options.send(:model_class)
@@ -79,11 +80,15 @@ module Associatable
     end
   end
 
-  def assoc_options
-    # Wait to implement this in Phase IVa. Modify `belongs_to`, too.
+  def assoc_options #this is already a class method by default
+    return @assoc_options if @assoc_options
+    @assoc_options = {}
+    @assoc_options
+
   end
 end
 
 class SQLObject
-  extend Associatable
+  extend Associatable #this appends self onto all of the methods
+  #include will not append self onto everything. include makes instance methods
 end
