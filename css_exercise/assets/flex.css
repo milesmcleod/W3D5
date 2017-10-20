@@ -108,6 +108,7 @@ header, header nav ul {
 
 nav ul {
   display: flex;
+  justify-content: space-between;
 }
 
 header {
