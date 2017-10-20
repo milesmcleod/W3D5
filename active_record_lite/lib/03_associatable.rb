@@ -3,6 +3,7 @@ require 'active_support/inflector'
 
 # Phase IIIa
 class AssocOptions
+
   attr_accessor(
     :foreign_key,
     :class_name,
@@ -14,14 +15,14 @@ class AssocOptions
   end
 
   def table_name
-    self.class_name.downcase + "s"
+    self.model_class.table_name
   end
 end
 
 class BelongsToOptions < AssocOptions
   def initialize(name, options = {})
     if options[:class_name].nil?
-      @class_name = name.camelcase
+      @class_name = name.to_s.camelcase.singularize
     else
       @class_name = options[:class_name]
     end
@@ -41,7 +42,7 @@ end
 class HasManyOptions < AssocOptions
   def initialize(name, self_class_name, options = {})
     if options[:class_name].nil?
-      @class_name = name.camelcase.singularize
+      @class_name = name.to_s.camelcase.singularize
     else
       @class_name = options[:class_name].singularize
     end
@@ -61,11 +62,21 @@ end
 module Associatable
   # Phase IIIb
   def belongs_to(name, options = {})
-    # ...
+    options = BelongsToOptions.new(name, options)
+    define_method(name) do
+      fkey_value = options.send(:foreign_key)
+      target_class = options.send(:model_class)
+      target_class.where(id: self.send(fkey_value)).first
+    end
   end
 
   def has_many(name, options = {})
-    # ...
+    options = HasManyOptions.new(name, self.to_s, options)
+    define_method(name) do
+      fkey_value = options.send(:foreign_key)
+      target_class = options.send(:model_class)
+      target_class.where(fkey_value => self.send(:id))
+    end
   end
 
   def assoc_options
@@ -74,5 +85,5 @@ module Associatable
 end
 
 class SQLObject
-  # Mixin Associatable here...
+  extend Associatable
 end
