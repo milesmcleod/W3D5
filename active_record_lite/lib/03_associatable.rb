@@ -73,6 +73,7 @@ module Associatable
 
   def has_many(name, options = {})
     options = HasManyOptions.new(name, self.to_s, options)
+    self.assoc_options[name] = options
     define_method(name) do
       fkey_value = options.send(:foreign_key)
       target_class = options.send(:model_class)
