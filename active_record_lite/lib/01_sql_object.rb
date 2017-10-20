@@ -106,14 +106,28 @@ class SQLObject
   end
 
   def update
-    # ...
+    sets = self.col_names[1..-2].split(",").map { |attr_name| "#{attr_name} = ?" }
+    set = sets.join(", ")
+    vals = self.attribute_values[1..-1]
+    DBConnection.execute(<<-SQL, *vals, self.id)
+      UPDATE
+        #{self.class.table_name}
+      SET
+        #{set}
+      WHERE
+        id = ?
+    SQL
+    self.id = DBConnection.last_insert_row_id
   end
 
   def save
-    # ...
+    if self.id.nil?
+      self.insert
+    else
+      self.update
+    end
   end
 
-  private
 
   def col_names
     "(#{self.class.columns[1..-1].map(&:to_s).join(",")})"
