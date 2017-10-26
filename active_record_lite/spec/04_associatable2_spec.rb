@@ -99,7 +99,7 @@ describe 'Associatable' do
     end
   end
 
-  describe '#belonds_to_through' do
+  describe '#belongs_to_through' do
     before(:all) do
       class Cat
         belongs_to_through :realhome, :human, :house
